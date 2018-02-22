@@ -7,6 +7,8 @@ import javafx.scene.shape.Rectangle;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.model.Plot;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -20,6 +22,7 @@ public class MinefieldRenderer implements Renderer<Minefield> {
 
     public static Node renderPlot(Plot plot, int w, int h) {
         Node square = renderPlot(plot.getX() * w, plot.getY() * h, w, h);
+        square.setId(String.format("plot_%d_%d", plot.getX(), plot.getY()));
         plot.setNode(square);
         return square;
     }
@@ -53,23 +56,6 @@ public class MinefieldRenderer implements Renderer<Minefield> {
                         .toArray(Rectangle[]::new)
                 ).flatMap(Stream::of)
                 .toArray(Rectangle[]::new);
-//
-//        for (int i = 0; i < rows; i++) {
-//            for (int j = 0; j < cols; j++) {
-//                Rectangle square = new Rectangle(xCurrent, yCurrent, width, height);
-//                square.setStroke(Color.BLACK);
-//                square.setStrokeWidth(0.5d);
-//                square.setFill(Color.TRANSPARENT);
-//
-//                toAdd[(cols * i) + j] = square;
-//
-//                xCurrent += width;
-//                System.out.println(String.format("Add Square %d", (cols * i) + j));
-//            }
-//
-//            xCurrent = xStart;
-//            yCurrent += height;
-//        }
 
         group.getChildren().addAll(renderArray);
 
@@ -80,9 +66,21 @@ public class MinefieldRenderer implements Renderer<Minefield> {
             }
 
             Rectangle n = (Rectangle)event.getPickResult().getIntersectedNode();
-            n.setFill(Color.RED);
+            Optional<Plot> p = Arrays.stream(data.getMines()).flatMap(Stream::of).filter(z -> z.getNode().equals(n)).findFirst();
 
-            System.out.println(n);
+            if (!p.isPresent()) {
+                return;
+            }
+
+            if (!p.get().isFlagged()) {
+                p.get().setFlagged(true);
+                n.setFill(Color.RED);
+            }
+            else {
+                n.setFill(Color.BLUE);
+            }
+
+            System.out.println(String.format("%s, id: %s", n, n.getId()));
         });
     }
 }

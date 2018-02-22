@@ -1,23 +1,14 @@
 package jonnu.mines.view;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.model.Plot;
+
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class MinefieldRenderer implements Renderer<Minefield> {
 
@@ -28,7 +19,7 @@ public class MinefieldRenderer implements Renderer<Minefield> {
     }
 
     public static Node renderPlot(Plot plot, int w, int h) {
-        Node square = renderPlot(plot.getX(), plot.getY(), w, h);
+        Node square = renderPlot(plot.getX() * w, plot.getY() * h, w, h);
         plot.setNode(square);
         return square;
     }
@@ -54,9 +45,9 @@ public class MinefieldRenderer implements Renderer<Minefield> {
         int yStart = 10;
 
         // use intstream here so that this can be parallel'd
-        Rectangle[] renderArray = IntStream.rangeClosed(0, data.getMines().length)
+        Rectangle[] renderArray = IntStream.range(0, data.getMines().length)
                 .boxed()
-                .map(row -> IntStream.rangeClosed(0, data.getMines()[0].length)
+                .map(row -> IntStream.range(0, data.getMines()[0].length)
                         .boxed()
                         .map(col -> renderPlot(data.getMines()[col][row], width, height))
                         .toArray(Rectangle[]::new)

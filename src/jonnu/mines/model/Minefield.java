@@ -1,17 +1,12 @@
 package jonnu.mines.model;
 
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 
-@Getter
+@Data
+@Builder
 public class Minefield {
-
     private final int x;
     private final int y;
     private final Plot[][] mines;
-
-    public Minefield(final int x, final int y) {
-        this.x = x;
-        this.y = y;
-        mines = new Plot[y][x];
-    }
 }

@@ -1,12 +1,12 @@
 package jonnu.mines.model;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class Minefield {
     private final int x;
     private final int y;
-    private final Plot[][] mines;
+    private final Plot[][] plots;
 }

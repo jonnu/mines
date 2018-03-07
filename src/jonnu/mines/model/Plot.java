@@ -1,6 +1,7 @@
 package jonnu.mines.model;
 
-import javafx.scene.Node;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
 
 /**
@@ -8,6 +9,12 @@ import lombok.Data;
  */
 @Data
 public class Plot {
+
+    public enum PlotState {
+        DEFAULT,
+        SEARCHED,
+        FLAGGED
+    }
 
     /**
      * The X co-ordinate of the plot.
@@ -20,19 +27,24 @@ public class Plot {
     private final int y;
 
     /**
-     * Did the player flag this as an interesting plot?
+     * Does this plot contain a mine?
      */
-    private boolean flagged;
+    private boolean mined;
 
     /**
-     * Did the player dig this plot?
+     * The state of the plot.
+     * [Observable]
      */
-    private boolean searched;
+    private final SimpleObjectProperty<PlotState> state = new SimpleObjectProperty<>(this, "state", PlotState.DEFAULT);
 
     /**
-     * What is the face value of this plot?
+     * The number of plots in proximity to this one with mines.
+     * [Observable]
      */
-    private int value;
+    private final SimpleLongProperty proximity = new SimpleLongProperty(this, "proximity");
 
-    private Node node;
+    @Override
+    public String toString() {
+        return String.format("Plot(%d, %d) [Has Mine: %s, Status: %s]", x, y, mined, state.get().toString());
+    }
 }

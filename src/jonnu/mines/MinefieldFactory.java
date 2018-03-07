@@ -20,11 +20,7 @@ public class MinefieldFactory {
     public Minefield createMinefield(final int x, final int y, final int mines) {
 
         List<Plot> plotList = IntStream.range(0, x * y).boxed()
-                .map(counter -> {
-                    int row = Math.floorDiv(counter, x);
-                    int col = counter % x;
-                    return new Plot(row, col);
-                })
+                .map(counter -> new Plot(Math.floorDiv(counter, x), counter % x))
                 .collect(Collectors.toList());
 
         // Randomly select, and add mines.
@@ -39,10 +35,12 @@ public class MinefieldFactory {
             // add mine
             int index = random.nextInt(indexes.size());
             Plot p = plotList.get(indexes.get(index));
-            p.setValue(1);
+
+            //p.getProximity().set(1);
 
             indexes.remove(index);
 
+            p.setMined(true);
             System.out.println(String.format("New mine: (%d, %d)", p.getX(), p.getY()));
         }
 
@@ -54,7 +52,7 @@ public class MinefieldFactory {
         return Minefield.builder()
                 .x(x)
                 .y(y)
-                .mines(plots)
+                .plots(plots)
                 .build();
     }
 }

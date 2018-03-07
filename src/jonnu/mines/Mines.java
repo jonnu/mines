@@ -6,8 +6,10 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import jonnu.mines.controller.GameController;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.view.MinefieldRenderer;
+import jonnu.mines.view.PlotRenderer;
 
 import java.util.Random;
 
@@ -37,15 +39,17 @@ public class Mines extends Application {
 
 
         MinefieldFactory f = new MinefieldFactory(new Random());
-        Minefield mf = f.createMinefield(10, 10, 5);
+        Minefield mf = f.createMinefield(9, 9, 10);
 
-        MinefieldRenderer mfr = new MinefieldRenderer(group);
+        GameController game = GameController.getGameController(mf);//new GameController(mf);
+
+        MinefieldRenderer mfr = new MinefieldRenderer(group, new PlotRenderer());
         mfr.render(mf);
 
+        //game.start();
 
         primaryStage.setScene(scene);
         primaryStage.show();
-
     }
 
     public static void main(String[] args) {

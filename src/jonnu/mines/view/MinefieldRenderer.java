@@ -1,86 +1,76 @@
 package jonnu.mines.view;
 
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import jonnu.mines.model.Minefield;
-import jonnu.mines.model.Plot;
+import static jonnu.mines.controller.GameController.getGameController;
 
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.TilePane;
+import javafx.scene.text.Text;
+import jonnu.mines.model.Minefield;
+import jonnu.mines.model.Plot;
+import jonnu.mines.presenter.PlotPresenter;
 
 public class MinefieldRenderer implements Renderer<Minefield> {
 
     private Group group;
+    private Renderer<Plot> plotRenderer;
 
-    public MinefieldRenderer(Group group) {
+    public MinefieldRenderer(final Group group, final Renderer<Plot> plotRenderer) {
         this.group = group;
+        this.plotRenderer = plotRenderer;
     }
 
-    public static Node renderPlot(Plot plot, int w, int h) {
-        Node square = renderPlot(plot.getX() * w, plot.getY() * h, w, h);
-        square.setId(String.format("plot_%d_%d", plot.getX(), plot.getY()));
-        plot.setNode(square);
-        return square;
+    public static void handlePlotHover(final MouseEvent event) {
+
+        PlotPresenter presenter = (PlotPresenter)event.getPickResult().getIntersectedNode().getParent();
+//
+//        if (presenter.getPlot().getState().get().equals(Plot.PlotState.SEARCHED)) {
+//            return;
+//        }
+
+        if (presenter.getPlot().isMined()) {
+            Text presenterText = (Text) presenter.getChildren().filtered(node -> node.getClass() == Text.class).get(0);
+            presenterText.setText("!");
+        }
     }
 
-    public static Node renderPlot(int x, int y, int w, int h) {
-        Rectangle square = new Rectangle(x, y, w, h);
-        square.setStroke(Color.BLACK);
-        square.setStrokeWidth(0.5d);
-        square.setFill(Color.TRANSPARENT);
-        return square;
+    public static void handlePlotClick(final MouseEvent event) {
+
+        // trigger the a*
+        //doAyStar();
+        getGameController(null).onPlotClicked(event);
+
+        // render results
+//        Rectangle plotView = (Rectangle)event.getPickResult().getIntersectedNode();
+//        plotView.setFill(Color.RED);
+//        Text t = (Text) plotView.getParent().getChildrenUnmodifiable().filtered(x -> x.getClass() == Text.class).get(0);
+//        t.setText("1");
     }
 
     @Override
-    public void render(final Minefield data) {
-
-        final int rows = data.getMines().length;
-        final int cols = data.getMines()[0].length;
-
-        final int width = 20;
-        final int height = 20;
-
-        int xStart = 10;
-        int yStart = 10;
+    public Node render(final Minefield data) {
 
         // use intstream here so that this can be parallel'd
-        Rectangle[] renderArray = IntStream.range(0, data.getMines().length)
+        Node[] renderArray = IntStream.range(0, data.getPlots().length)
                 .boxed()
-                .map(row -> IntStream.range(0, data.getMines()[0].length)
+                .map(row -> IntStream.range(0, data.getPlots()[0].length)
                         .boxed()
-                        .map(col -> renderPlot(data.getMines()[col][row], width, height))
-                        .toArray(Rectangle[]::new)
+                        .map(col -> plotRenderer.render(data.getPlots()[col][row]))
+                        .toArray(Node[]::new)
                 ).flatMap(Stream::of)
-                .toArray(Rectangle[]::new);
+                .toArray(Node[]::new);
 
-        group.getChildren().addAll(renderArray);
+        TilePane tp = new TilePane();
+        tp.setPrefColumns(data.getPlots()[0].length);
+        tp.setPrefRows(data.getPlots().length);
+        tp.getChildren().addAll(renderArray);
 
-        group.setOnMouseClicked(event -> {
+        group.getChildren().add(tp);
 
-            if (event.getPickResult().getIntersectedNode().getClass() != Rectangle.class) {
-                return;
-            }
-
-            Rectangle n = (Rectangle)event.getPickResult().getIntersectedNode();
-            Optional<Plot> p = Arrays.stream(data.getMines()).flatMap(Stream::of).filter(z -> z.getNode().equals(n)).findFirst();
-
-            if (!p.isPresent()) {
-                return;
-            }
-
-            if (!p.get().isFlagged()) {
-                p.get().setFlagged(true);
-                n.setFill(Color.RED);
-            }
-            else {
-                n.setFill(Color.BLUE);
-            }
-
-            System.out.println(String.format("%s, id: %s", n, n.getId()));
-        });
+        return group;
     }
 }

@@ -1,5 +1,7 @@
 package jonnu.mines.view;
 
+import javafx.scene.Node;
+
 public interface Renderer<T> {
-    void render(final T data);
+    Node render(final T data);
 }

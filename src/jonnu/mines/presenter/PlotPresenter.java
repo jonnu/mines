@@ -18,6 +18,7 @@ public class PlotPresenter extends StackPane {
     private final Plot plot;
 
     public PlotPresenter(final Plot plot, final Node... children) {
+
         super(children);
         this.plot = plot;
 
@@ -26,27 +27,31 @@ public class PlotPresenter extends StackPane {
     }
 
     public void onStateChange(ObservableValue observable, Plot.PlotState oldValue, Plot.PlotState newValue) {
+
+        Color colour;
         Plot plot = (Plot) ((SimpleObjectProperty)observable).getBean();
 
-        Rectangle r = (Rectangle) this.getChildren().filtered(x -> x.getClass() == Rectangle.class).get(0);
         switch (newValue) {
-            case DEFAULT:
-                r.setFill(Color.WHITE);
-                break;
+
             case SEARCHED:
-                r.setFill(Color.GREY);
+                colour = plot.isMined() ? Color.RED : Color.GREY;
                 break;
             case FLAGGED:
-                r.setFill(Color.GREEN);
+                colour = Color.GREEN;
+                break;
+            default:
+                colour = Color.WHITE;
                 break;
         }
-        System.out.println(plot + "| Old: " + oldValue + " | New: " + newValue);
+
+        getByLookup(Rectangle.class, ".plot").setFill(colour);
     }
 
     public void onProximityChange(ObservableValue observable, Number oldValue, Number newValue) {
-        Plot plot = (Plot) ((SimpleLongProperty)observable).getBean();
-        Text text = (Text) this.getChildren().filtered(n -> n.getClass() == Text.class).get(0);
-        System.out.printf("Setting proximity of (%d, %d) to %d", plot.getX(), plot.getY(), newValue.intValue());
-        text.setText(String.valueOf(newValue));
+        getByLookup(Text.class, ".text").setText(String.valueOf(newValue));
+    }
+
+    private <T> T getByLookup(final Class<T> clazz, final String selector) {
+        return clazz.cast(lookup(selector));
     }
 }

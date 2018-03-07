@@ -29,19 +29,17 @@ public class MinefieldFactory {
                 .boxed()
                 .collect(Collectors.toList());
 
-        // add minez.
+        // add mines.
         for (int i = 0; i < mines; i++) {
 
             // add mine
             int index = random.nextInt(indexes.size());
             Plot p = plotList.get(indexes.get(index));
 
-            //p.getProximity().set(1);
-
             indexes.remove(index);
 
             p.setMined(true);
-            System.out.println(String.format("New mine: (%d, %d)", p.getX(), p.getY()));
+            //System.out.println(String.format("New mine: (%d, %d)", p.getX(), p.getY()));
         }
 
         Plot[][] plots = IntStream.range(0, x)

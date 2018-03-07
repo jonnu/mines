@@ -5,19 +5,32 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.model.Plot;
 import jonnu.mines.presenter.PlotPresenter;
+import lombok.Getter;
 
 public class GameController {
 
+    public enum GameState {
+        READY,
+        PLAYING,
+        GAME_OVER
+    }
+
+    @Getter
     private static GameController instance;
 
     private final Minefield minefield;
+    private GameState state;
 
     private GameController(final Minefield minefield) {
         this.minefield = minefield;
+        this.state = GameState.READY;
     }
 
     public static GameController getGameController(final Minefield minefield) {
@@ -31,17 +44,33 @@ public class GameController {
 
     public void onPlotClicked(final MouseEvent event) {
 
+        if (state == GameState.READY) {
+            state = GameState.PLAYING;
+        }
+
+        if (state != GameState.PLAYING) {
+            return;
+        }
+
         PlotPresenter presenter = (PlotPresenter)event.getPickResult().getIntersectedNode().getParent();
 
+        if (event.getButton() == MouseButton.SECONDARY || event.isControlDown()) {
+            presenter.getPlot().getState().set(Plot.PlotState.FLAGGED);
+            return;
+        }
+
         presenter.getPlot().getState().set(Plot.PlotState.SEARCHED);
-        System.out.println("Player clicked: " + presenter.getPlot());
 
         checkGameOver(presenter.getPlot());
         findAstar(presenter.getPlot());
     }
 
+    public void onPlotHover(final MouseEvent event) {
+        Node node = event.getPickResult().getIntersectedNode();
+        node.setCursor(state == GameState.GAME_OVER ? Cursor.DEFAULT : Cursor.HAND);
+    }
 
-    private Plot tryAddPlot(int x, int y) {
+    private Plot addPotentialPlot(int x, int y) {
 
         if (y < 0 || y >= minefield.getPlots().length) {
             return null;
@@ -60,6 +89,7 @@ public class GameController {
             System.out.println("*****************************");
             System.out.println("*********** BOOM ************");
             System.out.println("*****************************");
+            state = GameState.GAME_OVER;
         }
     }
 
@@ -67,14 +97,14 @@ public class GameController {
 
         // start checking the cardinal directions.
         List<Plot> surroundingPlots = Stream.of(
-                tryAddPlot(origin.getX(), origin.getY() - 1), // North
-                tryAddPlot(origin.getX() + 1, origin.getY() - 1), // North-East
-                tryAddPlot(origin.getX() + 1, origin.getY()), // East
-                tryAddPlot(origin.getX() + 1, origin.getY() + 1), // South-East
-                tryAddPlot(origin.getX(), origin.getY() + 1), // South
-                tryAddPlot(origin.getX() - 1, origin.getY() + 1), // South-West
-                tryAddPlot(origin.getX() - 1, origin.getY()), // West
-                tryAddPlot(origin.getX() - 1, origin.getY() - 1)  // North-West
+                addPotentialPlot(origin.getX(), origin.getY() - 1), // North
+                addPotentialPlot(origin.getX() + 1, origin.getY() - 1), // North-East
+                addPotentialPlot(origin.getX() + 1, origin.getY()), // East
+                addPotentialPlot(origin.getX() + 1, origin.getY() + 1), // South-East
+                addPotentialPlot(origin.getX(), origin.getY() + 1), // South
+                addPotentialPlot(origin.getX() - 1, origin.getY() + 1), // South-West
+                addPotentialPlot(origin.getX() - 1, origin.getY()), // West
+                addPotentialPlot(origin.getX() - 1, origin.getY() - 1)  // North-West
         ).filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -86,8 +116,8 @@ public class GameController {
 
         long surroundingCount = getSurroundingMineCount(surroundingPlots);
 
-        System.out.println(String.format("(%d, %d) has %d mines surrounding it [%s]",
-                origin.getX(), origin.getY(), surroundingCount, origin.getState().get()));
+        //System.out.println(String.format("(%d, %d) has %d mines surrounding it [%s]",
+        //        origin.getX(), origin.getY(), surroundingCount, origin.getState().get()));
 
         origin.getProximity().set(surroundingCount);
 

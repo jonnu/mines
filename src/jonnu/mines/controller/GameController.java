@@ -54,14 +54,25 @@ public class GameController {
 
         PlotPresenter presenter = (PlotPresenter)event.getPickResult().getIntersectedNode().getParent();
 
+        Plot.PlotState currentState = presenter.getPlot().getState().get();
+        if (currentState.equals(Plot.PlotState.SEARCHED)) {
+            return;
+        }
+
         if (event.getButton() == MouseButton.SECONDARY || event.isControlDown()) {
-            presenter.getPlot().getState().set(Plot.PlotState.FLAGGED);
+            Plot.PlotState newState = currentState.equals(Plot.PlotState.FLAGGED) ? Plot.PlotState.DEFAULT : Plot.PlotState.FLAGGED;
+            presenter.getPlot().getState().set(newState);
             return;
         }
 
         presenter.getPlot().getState().set(Plot.PlotState.SEARCHED);
 
         checkGameOver(presenter.getPlot());
+
+        if (state == GameState.GAME_OVER) {
+            return;
+        }
+
         findAstar(presenter.getPlot());
     }
 

@@ -1,5 +1,7 @@
 package jonnu.mines;
 
+import java.util.Random;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -10,8 +12,6 @@ import jonnu.mines.controller.GameController;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.view.MinefieldRenderer;
 import jonnu.mines.view.PlotRenderer;
-
-import java.util.Random;
 
 public class Mines extends Application {
     /**

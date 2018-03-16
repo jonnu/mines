@@ -5,9 +5,9 @@ import java.util.stream.Stream;
 
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.layout.TilePane;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.model.Plot;
+import jonnu.mines.presenter.MinefieldPresenter;
 
 public class MinefieldRenderer implements Renderer<Minefield> {
 
@@ -32,12 +32,7 @@ public class MinefieldRenderer implements Renderer<Minefield> {
                 ).flatMap(Stream::of)
                 .toArray(Node[]::new);
 
-        TilePane tp = new TilePane();
-        tp.setPrefColumns(data.getPlots()[0].length);
-        tp.setPrefRows(data.getPlots().length);
-        tp.getChildren().addAll(renderArray);
-
-        group.getChildren().add(tp);
+        group.getChildren().add(new MinefieldPresenter(data, renderArray));
 
         return group;
     }

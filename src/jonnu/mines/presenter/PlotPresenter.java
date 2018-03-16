@@ -1,7 +1,5 @@
 package jonnu.mines.presenter;
 
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
@@ -13,7 +11,7 @@ import jonnu.mines.model.Plot;
 import lombok.Getter;
 
 @Getter
-public class PlotPresenter extends StackPane {
+public class PlotPresenter extends StackPane implements Presenter {
 
     private final Plot plot;
 

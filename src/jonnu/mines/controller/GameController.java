@@ -9,6 +9,8 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import jonnu.mines.model.Game;
+import jonnu.mines.model.Game.GameState;
 import jonnu.mines.model.Minefield;
 import jonnu.mines.model.Plot;
 import jonnu.mines.presenter.PlotPresenter;
@@ -16,21 +18,15 @@ import lombok.Getter;
 
 public class GameController {
 
-    public enum GameState {
-        READY,
-        PLAYING,
-        GAME_OVER
-    }
-
     @Getter
     private static GameController instance;
 
+    private final Game game;
     private final Minefield minefield;
-    private GameState state;
 
     private GameController(final Minefield minefield) {
+        this.game = Game.builder().build();
         this.minefield = minefield;
-        this.state = GameState.READY;
     }
 
     public static GameController getGameController(final Minefield minefield) {
@@ -44,11 +40,12 @@ public class GameController {
 
     public void onPlotClicked(final MouseEvent event) {
 
-        if (state == GameState.READY) {
-            state = GameState.PLAYING;
+        // First click will start the game.
+        if (game.isInState(GameState.READY)) {
+            game.changeState(GameState.PLAYING);
         }
 
-        if (state != GameState.PLAYING) {
+        if (!game.isInState(GameState.PLAYING)) {
             return;
         }
 
@@ -69,7 +66,7 @@ public class GameController {
 
         checkGameOver(presenter.getPlot());
 
-        if (state == GameState.GAME_OVER) {
+        if (game.isGameOver()) {
             return;
         }
 
@@ -78,7 +75,7 @@ public class GameController {
 
     public void onPlotHover(final MouseEvent event) {
         Node node = event.getPickResult().getIntersectedNode();
-        node.setCursor(state == GameState.GAME_OVER ? Cursor.DEFAULT : Cursor.HAND);
+        node.setCursor(game.isGameOver() ? Cursor.DEFAULT : Cursor.HAND);
     }
 
     private Plot addPotentialPlot(int x, int y) {
@@ -100,7 +97,7 @@ public class GameController {
             System.out.println("*****************************");
             System.out.println("*********** BOOM ************");
             System.out.println("*****************************");
-            state = GameState.GAME_OVER;
+            game.changeState(GameState.GAME_OVER);
         }
     }
 
@@ -126,10 +123,6 @@ public class GameController {
         }
 
         long surroundingCount = getSurroundingMineCount(surroundingPlots);
-
-        //System.out.println(String.format("(%d, %d) has %d mines surrounding it [%s]",
-        //        origin.getX(), origin.getY(), surroundingCount, origin.getState().get()));
-
         origin.getProximity().set(surroundingCount);
 
         if (surroundingCount == 0) {
